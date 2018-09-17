@@ -40,7 +40,7 @@ module GeneratorSpec
     
     class Migration < File
       def matches?(root)
-        file_name = migration_file_name(root, @name)
+        file_name = Migration.migration_file_name(root, @name)
         
         unless file_name && file_name.exist?
           throw :failure, @name
@@ -49,9 +49,7 @@ module GeneratorSpec
         check_contents(file_name)
       end
       
-      protected
-      
-      def migration_file_name(root, name) #:nodoc:
+      def self.migration_file_name(root, name) #:nodoc:
         directory, file_name = ::File.dirname(root.join(name)), ::File.basename(name).sub(/\.rb$/, '')
         migration = Dir.glob("#{directory}/[0-9]*_*.rb").grep(/\d+_#{file_name}.rb$/).first
         Pathname.new(migration) if migration
@@ -86,6 +84,10 @@ module GeneratorSpec
       
       def migration(name, &block)
         @tree[name] = Migration.new(location(name), &block)
+      end
+
+      def no_migration(name)
+        @negative_tree << Migration.migration_file_name(@root, name)
       end
 
       def matches?(root)
